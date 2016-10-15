@@ -88,7 +88,93 @@ public class WeightedGraph {
 		return null;
 	}
 	
+	
+	
+	
+	// Path Problems
+	
+	public List<Vertex> findMinimumPath(Vertex start, Vertex finish){
+		
+		Map<Vertex, Boolean> visited = new HashMap<Vertex, Boolean>();
+		Map<Vertex, Vertex> prev = new HashMap<Vertex, Vertex>();
+	    List<Vertex> directions = new LinkedList<Vertex>();
+	    Queue<Vertex> q = new LinkedList<Vertex>();
+	    
+	    Vertex current = start;
+	    q.add(current);
+	    visited.put(current, true);
+	    while(!q.isEmpty()){
+	        current = q.remove();
+	        if (current.equals(finish)){
+	            break;
+	        }else{
+	            for(EdgeNode en : getEdgeList(current).getEdges()){
+	            	Vertex v = en.v2;
+	                if(!visited.containsKey(v)){
+	                    q.add(v);
+	                    visited.put(v, true);
+	                    prev.put(v, current);
+	                }
+	            }
+	        }
+	    }
+	    if (!current.equals(finish)){
+	        System.out.println("Can't reach destination");
+	    }
+	    for(Vertex v = finish; v != null; v = prev.get(v)) {
+	        directions.add(v);
+	    }
+	    Collections.reverse(directions);
+	    return directions;
+	}
+	
+	public Vertex[] findShortestPath(Vertex v1, Vertex v2){
+		if (v1==null || v2 ==null){
+			throw new RuntimeException("These vertices don't exist");
+		}
+		Set<Vertex> q = new HashSet<>();
+		int size = vertices.size();
+		int[] dist = new int[size];
+		Vertex[] prev = new Vertex[size];
+		boolean[] visited = new boolean[size];
+		for( int i = 0; i < size; i++ ){
+			dist[i] = (int)Integer.MAX_VALUE;
+			visited[i] = false;
+			prev[i] = null;
+		}
 
+		dist[vertices.indexOf(v1)] = 0;
+		q.add(v1);
+
+		while (!q.isEmpty()){
+			Vertex min = getCheapest(v1, q);
+			q.remove(min);
+			visited[vertices.indexOf(min)] = true;
+			for (EdgeNode nb: getEdgeList(min).getEdges()){
+				Vertex v = nb.v2;
+				int alt = dist[vertices.indexOf(min)]+ getWeight(min,v);
+				if (alt < dist[vertices.indexOf(v)]){
+					dist[vertices.indexOf(v)] = alt;
+					prev[vertices.indexOf(v)] = min;
+					if (!visited[vertices.indexOf(v)]){
+						q.add(v);
+					}
+				}
+			}
+		}
+		return prev;
+	}
+	
+	public Vertex getCheapest(Vertex source, Set<Vertex> s){
+		Iterator<Vertex> it = s.iterator();
+		Vertex min = it.next();
+		for (Vertex vertex: s){
+			if(getWeight(source, vertex)<getWeight(source, min)){
+				min = vertex;
+			}
+		}
+		return min;
+	}
 	
 	public String pathToString(List<Vertex> path){
 		// remove all elements from the list that are null to avoid an exception during iteration
